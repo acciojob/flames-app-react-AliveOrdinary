@@ -1,90 +1,63 @@
-import React, { Component, useState } from "react";
+import React, { useState } from "react";
 import "../styles/App.css";
 
-const relation = (str1, str2) => {
-  let common = "";
-  for (let i = 0; i < str1.length; i++) {
-    if (str2.indexOf(str1[i]) !== -1) {
-      common += str1[i];
-      str2 = str2.replace(str1[i], "");
-    }
-  }
-
-  let str1WithoutCommon = "";
-  for (let i = 0; i < str1.length; i++) {
-    if (common.indexOf(str1[i]) === -1) {
-      str1WithoutCommon += str1[i];
-    }
-  }
-
-  let str2WithoutCommon = "";
-  for (let i = 0; i < str2.length; i++) {
-    str2WithoutCommon += str2[i];
-  }
-
-  let totalLength = str1WithoutCommon.length + str2WithoutCommon.length;
-  switch (totalLength % 6) {
-    case 1:
-      return "Friends";
-    case 2:
-      return "Love";
-    case 3:
-      return "Affection";
-    case 4:
-      return "Marriage";
-    case 5:
-      return "Enemy";
-    case 0:
-      return "Siblings";
-    default:
-      return "";
-  }
-};
+const relationshipMap = {
+    0: 'Siblings',
+    1: 'Friends',
+    2: 'Love',
+    3: 'Affection',
+    4: 'Marriage',
+    5: 'Enemy'
+}
 
 const App = () => {
-  const [str1, setStr1] = useState("");
-  const [str2, setStr2] = useState("");
-  const [relationType, setRelationType] = useState("");
+    const [str1,setStr1] = useState("");
+    const [str2,setStr2] = useState("");
+    const [relation, setRelation] = useState("");
+    const [isError, setIsError] = useState(false);
 
-  const handleStr1Change = (event) => {
-    setStr1(event.target.value);
-  };
+    const handleOnChange1 = (event) => {
+        setStr1(event.target.value);
+    };
+    const handleOnChange2 = (event) => {
+        setStr2(event.target.value);
+    };
 
-  const handleStr2Change = (event) => {
-    setStr2(event.target.value);
-  };
+    const handleCalculate = () => {
+        if(!str1 || !str2) setIsError(true);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    setRelationType(relation(str1, str2));
-  };
+        let newStr1 = "";
+        let newStr2 = "";
 
-  return (
-    <div id="main">
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>
-            String 1:
-            <input type="text" value={str1} onChange={handleStr1Change} />
-          </label>
-        </div>
-        <div>
-          <label>
-            String 2:
-            <input type="text" value={str2} onChange={handleStr2Change} />
-          </label>
-        </div>
-        <button type="submit">Submit</button>
-      </form>
-      <div>
-        {relationType === "" ? (
-          <p>Please Enter valid input</p>
-        ) : (
-          <p>Relation type: {relationType}</p>
-        )}
-      </div>
-    </div>
-  );
+        for (let i=0;i<str1.length;i++){
+          if(str2.includes(str1[i])){
+            newStr2 = str2.replace(str1[i],"");
+            break;
+          } 
+          newStr1  = newStr1 + str1[i];
+        }
+        const relationIndex = (newStr1.length + newStr2.length) % 6;
+        setRelation(relationshipMap[relationIndex]);
+    };
+
+    const handleClear = () => {
+        setStr1("");
+        setStr2("");
+        setRelation("");
+    };
+
+
+
+  return <div id="main">{/* Do not remove the main div */}
+  <input type="text" data-testid="input1" value={str1} onChange={handleOnChange1}></input>
+  <input type="text" data-testid="input2" value={str2} onChange={handleOnChange2}></input>
+
+    <button data-testid="calculate_relationship" onChange={handleCalculate}>Calculate</button>
+    <button data-testid="clear" onChange={handleClear}>Clear</button>
+    <h3 data-testid="answer">
+        {isError ? "Please Enter valid input" : relation }
+    </h3>
+  </div>;
 };
 
 export default App;
