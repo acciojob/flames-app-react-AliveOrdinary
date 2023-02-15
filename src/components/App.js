@@ -1,78 +1,89 @@
-import React, { useState } from "react";
-import "../styles/App.css";
+import React, {Component, useState} from "react";
 
-const relationshipMap = {
-  0: "Siblings",
-  1: "Friends",
-  2: "Love",
-  3: "Affection",
-  4: "Marriage",
-  5: "Enemy",
-};
+import '../styles/App.css';
 
-const App = () => {
-  const [str1, setStr1] = useState("");
-  const [str2, setStr2] = useState("");
-  const [relation, setRelation] = useState("");
-  const [isError, setIsError] = useState(false);
+class App extends Component{
+  state = {
+    data : {name1:'',
+      name2:'',
+      answer:''}
+  }
 
-  const handleOnChange1 = (event) => {
-    setStr1(event.target.value);
-  };
-  const handleOnChange2 = (event) => {
-    setStr2(event.target.value);
-  };
+  handleChange = (e) => {
+        const data = {...this.state.data}
+        data[e.currentTarget.name] = e.currentTarget.value;
+        this.setState({data})
+  }
 
-  const handleCalculate = () => {
-    if (!str1 || !str2) setIsError(true);
-
-    let newStr1 = "";
-    let newStr2 = "";
-
-    for (let i = 0; i < str1.length; i++) {
-      if (str2.includes(str1[i])) {
-        newStr2 = str2.replace(str1[i], "");
-        break;
+  match = (s1,s2) => {
+      let count = 0
+      let dict = {}
+      for (let i=0;i<s1.length;i++){
+          if(s1[i] in dict){
+              dict[s1[i]]+=1
+          }else{
+              dict[s1[i]] = 1
+          }
       }
-      newStr1 = newStr1 + str1[i];
+      for (let j=0;j<s2.length;j++){
+          if(s2[j] in dict){
+              dict[s2[j]]-=1
+              count+=1
+          }
+          if(dict[s2[j]]==0){
+              delete dict[s2[j]]
+          }
+      }
+      return count
+  }
+
+  handleClick = e => {
+    if(e.currentTarget.name == 'clear'){
+          const data = {
+              name1:'',
+              name2:'',
+              answer:''
+          }
+          this.setState({data})
+          return
+    }else if(this.state.data.name1.length && this.state.data.name2.length){
+        let count = this.state.data.name1.length+this.state.data.name2.length-(this.match(this.state.data.name1,this.state.data.name2)*2)
+        let answer;
+        if(count%6==1){
+            answer = "Friends"
+        }else if(count%6==2){
+            answer = "Love"
+        }else if(count%6==3){
+            answer = "Affection"
+        }else if(count%6==4){
+            answer = "Marriage"
+        }else if(count%6==5){
+            answer = "Enemy"
+        }else{
+            answer = "Siblings"
+        }
+        const data = {...this.state.data}
+        data.answer = answer
+        this.setState({data})
+    }else{
+        const data = {...this.state.data}
+        data.answer = 'Please Enter valid input'
+        this.setState({data})
     }
-    const relationIndex = (newStr1.length + newStr2.length) % 6;
-    setRelation(relationshipMap[relationIndex]);
-  };
+  }
 
-  const handleClear = () => {
-    setStr1("");
-    setStr2("");
-    setRelation("");
-  };
+  render(){
+    return(
+        <div>
+          <input data-testid="input1" value={this.state.data.name1} onChange={this.handleChange} type="text" name="name1" placeholder={'Enter first name'}/>
+          <input data-testid="input2" value={this.state.data.name2} onChange={this.handleChange} type="text" name="name2" placeholder={'Enter second name'}/>
+          <button data-testid="calculate_relationship" onClick={this.handleClick} name="calculate_relationship">Calculate Relationship Future</button>
+          <button data-testid="clear" onClick={this.handleClick} name="clear">Clear</button>
+          <h3 data-testid="answer">{this.state.data.answer}</h3>
+        </div>
+    )
+  }
+}
 
-  return (
-    <div id="main">
-      {/* Do not remove the main div */}
-      <input
-        type="text"
-        data-testid="input1"
-        value={str1}
-        onChange={handleOnChange1}
-      ></input>
-      <input
-        type="text"
-        data-testid="input2"
-        value={str2}
-        onChange={handleOnChange2}
-      ></input>
-
-      <button data-testid="calculate_relationship" onChange={handleCalculate}>
-        Calculate
-      </button>
-      <button data-testid="clear" onChange={handleClear}>
-        Clear
-      </button>
-      <h3 data-testid="answer">
-        {isError ? "Please Enter valid input" : relation}
-      </h3>
-    </div>
-  );
-};
 
 export default App;
